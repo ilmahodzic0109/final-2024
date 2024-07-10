@@ -91,10 +91,17 @@ class ExamDao {
      * Implement DAO method used to get foods report
      */
     public function get_foods_report(){
-      $query = 'SELECT id, name, brand, image_url FROM foods';
-      $statement = $this->connection->query($query);
-      $foods = $statement->fetchAll(PDO::FETCH_ASSOC);
-      return $foods;
+      $query="select f.name as name, f.brand as brand, f.image_url as image, 
+(SELECT quantity from food_nutrients fn where fn.food_id = f.id and nutrient_id = 1) as energy,
+(SELECT quantity from food_nutrients fn where fn.food_id = f.id and nutrient_id = 2) as protein,
+(SELECT quantity from food_nutrients fn where fn.food_id = f.id and nutrient_id = 3) as fat,
+(SELECT quantity from food_nutrients fn where fn.food_id = f.id and nutrient_id = 4) as carbs,
+(SELECT quantity from food_nutrients fn where fn.food_id = f.id and nutrient_id = 5) as fiber
+from foods f;";
+$statement = $this->connection->prepare($query);
+$statement->execute();
+$food = $statement->fetchAll(PDO::FETCH_ASSOC);
+      return $food;
   }
   
   

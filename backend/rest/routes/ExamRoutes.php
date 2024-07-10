@@ -77,24 +77,32 @@ Flight::route('GET /foods/report', function(){
     * This endpoint should return output in JSON format
     * 15 points
     */
-    $service = new ExamService();
-    $foods = $service->get_foods_report();
-    
-    // Add placeholder values for nutrients
-    $foods_with_nutrients = array_map(function($food) {
-        return [
-            'name' => $food['name'],
-            'brand' => $food['brand'],
-            'image' => '<img src="' . $food['image_url'] . '" alt="' . $food['name'] . '">',
-            'energy' => 0,  // Placeholder value
-            'protein' => 0, // Placeholder value
-            'fat' => 0,     // Placeholder value
-            'fiber' => 0,   // Placeholder value
-            'carbs' => 0    // Placeholder value
-        ];
-    }, $foods);
+    $data = Flight::get('exam_service')->get_foods_report();
 
-    Flight::json($foods_with_nutrients);
+    $body = Flight::request()->query;
+
+    if (count($body) == 0) {
+        Flight::json($data);
+        return;
+    }
+
+    $paginatedData = [];
+
+    for ($i = (int)$body['offset']; $i <= (int)$body['limit']; $i++) { 
+        array_push($paginatedData, [
+            "name" => $data[$i]['name'],
+            "brand" => $data[$i]['brand'],
+            "image" => "<img src='".$data[$i]['image']."' />",
+            "energy" => $data[$i]['energy'],
+            "protein" => $data[$i]['protein'],
+            "fat" => $data[$i]['fat'],
+            "fiber" => $data[$i]['fiber'],
+            "carbs" => $data[$i]['carbs'],
+
+        ]);
+    }
+
+    Flight::json($paginatedData);
 });
 
 ?>
